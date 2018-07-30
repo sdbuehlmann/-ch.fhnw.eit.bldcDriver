@@ -1,0 +1,9 @@
+[submodule "PlattformAPI"]
+	path = PlattformAPI
+	url = https://github.com/sdbuehlmann/ch.fhnw.eit.bldcDriver.platformAPI.git
+[submodule "Application"]
+	path = Application
+	url = https://github.com/sdbuehlmann/ch.fhnw.eit.bldcDriver.application
+[submodule "PlatformAPI"]
+	path = PlatformAPI
+	url = https://github.com/sdbuehlmann/ch.fhnw.eit.bldcDriver.platformAPI.git

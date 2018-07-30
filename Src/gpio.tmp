@@ -1,0 +1,85 @@
+
+#n/** Configure pins as #n #t#t #t* Analog #n #t#t #t* Input #n #t#t #t* Output#n #t#t #t* EVENT_OUT#n #t#t #t* EXTI
+*/
+static void MX_GPIO_Init(void)
+{
+#n
+#tGPIO_InitTypeDef GPIO_InitStruct;
+#n#t/* GPIO Ports Clock Enable */
+#t__HAL_RCC_GPIOC_CLK_ENABLE();
+#t__HAL_RCC_GPIOF_CLK_ENABLE();
+#t__HAL_RCC_GPIOA_CLK_ENABLE();
+#t__HAL_RCC_GPIOB_CLK_ENABLE();
+#t__HAL_RCC_GPIOD_CLK_ENABLE();
+#n#t/*Configure GPIO pin Output Level */
+#tHAL_GPIO_WritePin(GPIOA, DO_DRIVER_EN_Pin|DO_SELECT_BRIDGE_DRIVER_Pin, GPIO_PIN_RESET);
+#n#t/*Configure GPIO pin Output Level */
+#tHAL_GPIO_WritePin(GPIOC, DO_LED_1_Pin|DO_DRIVER_DC_CAL_Pin, GPIO_PIN_RESET);
+#n#t/*Configure GPIO pin Output Level */
+#tHAL_GPIO_WritePin(DO_INC_POSITION_GPIO_Port, DO_INC_POSITION_Pin, GPIO_PIN_RESET);
+#n#t/*Configure GPIO pins : IR_COMP_B_Pin IR_COMP_A_Pin */
+#tGPIO_InitStruct.Pin = IR_COMP_B_Pin|IR_COMP_A_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tHAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+#n#t/*Configure GPIO pins : DI_INC_ENABLE_Pin DI_INC_CALIBRATE_Pin */
+#tGPIO_InitStruct.Pin = DI_INC_ENABLE_Pin|DI_INC_CALIBRATE_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tHAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+#n#t/*Configure GPIO pins : DO_DRIVER_EN_Pin DO_SELECT_BRIDGE_DRIVER_Pin */
+#tGPIO_InitStruct.Pin = DO_DRIVER_EN_Pin|DO_SELECT_BRIDGE_DRIVER_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tGPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+#tHAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+#n#t/*Configure GPIO pins : DI_DRIVER_PWRGD_Pin DI_DRIVER_NOCTW_Pin DI_INC_B_Pin */
+#tGPIO_InitStruct.Pin = DI_DRIVER_PWRGD_Pin|DI_DRIVER_NOCTW_Pin|DI_INC_B_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tHAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+#n#t/*Configure GPIO pins : DI_DRIVER_NFAULT_Pin DI_ENABLE_PRINT_Pin DI_USER_IN_Pin */
+#tGPIO_InitStruct.Pin = DI_DRIVER_NFAULT_Pin|DI_ENABLE_PRINT_Pin|DI_USER_IN_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tHAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+#n#t/*Configure GPIO pins : DO_LED_1_Pin DO_DRIVER_DC_CAL_Pin */
+#tGPIO_InitStruct.Pin = DO_LED_1_Pin|DO_DRIVER_DC_CAL_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tGPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+#tHAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+#n#t/*Configure GPIO pin : IR_INC_REF_Pin */
+#tGPIO_InitStruct.Pin = IR_INC_REF_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tHAL_GPIO_Init(IR_INC_REF_GPIO_Port, &GPIO_InitStruct);
+#n#t/*Configure GPIO pin : IR_INC_A_Pin */
+#tGPIO_InitStruct.Pin = IR_INC_A_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tHAL_GPIO_Init(IR_INC_A_GPIO_Port, &GPIO_InitStruct);
+#n#t/*Configure GPIO pin : DO_INC_POSITION_Pin */
+#tGPIO_InitStruct.Pin = DO_INC_POSITION_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tGPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+#tHAL_GPIO_Init(DO_INC_POSITION_GPIO_Port, &GPIO_InitStruct);
+#n#t/*Configure GPIO pin : IR_COMP_C_Pin */
+#tGPIO_InitStruct.Pin = IR_COMP_C_Pin;
+#tGPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+#tGPIO_InitStruct.Pull = GPIO_NOPULL;
+#tHAL_GPIO_Init(IR_COMP_C_GPIO_Port, &GPIO_InitStruct);
+#n#t/* EXTI interrupt init*/
+#tHAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+#tHAL_NVIC_EnableIRQ(EXTI0_IRQn);#n
+#tHAL_NVIC_SetPriority(EXTI2_TSC_IRQn, 0, 0);
+#tHAL_NVIC_EnableIRQ(EXTI2_TSC_IRQn);#n
+#tHAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+#tHAL_NVIC_EnableIRQ(EXTI4_IRQn);#n
+#tHAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+#tHAL_NVIC_EnableIRQ(EXTI9_5_IRQn);#n
+#tHAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+#tHAL_NVIC_EnableIRQ(EXTI15_10_IRQn);#n#n
+}
+#n
