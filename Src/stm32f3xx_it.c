@@ -36,7 +36,8 @@
 #include "stm32f3xx_it.h"
 
 /* USER CODE BEGIN 0 */
-#include "bldc_driver_adapter.h"
+#include "platformAPIConfig.h"
+#include "platformAdapter.h"
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -44,6 +45,7 @@ extern DMA_HandleTypeDef hdma_adc1;
 extern DMA_HandleTypeDef hdma_adc4;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
+extern UART_HandleTypeDef huart3;
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
@@ -193,7 +195,9 @@ void SysTick_Handler(void)
 void EXTI0_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI0_IRQn 0 */
+#ifdef COMPERATORS
 	phaseAComp_interrupt();
+#endif
   /* USER CODE END EXTI0_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
@@ -207,7 +211,9 @@ void EXTI0_IRQHandler(void)
 void EXTI2_TSC_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI2_TSC_IRQn 0 */
+#ifdef ENCODER
   encoderReferencePosition_IRQ();
+#endif /* ENCODER */
   /* USER CODE END EXTI2_TSC_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
   /* USER CODE BEGIN EXTI2_TSC_IRQn 1 */
@@ -221,7 +227,9 @@ void EXTI2_TSC_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
+#ifdef ENCODER
   encoderSignalA_IRQ();
+#endif /* ENCODER */
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
@@ -248,7 +256,9 @@ void DMA1_Channel1_IRQHandler(void)
 void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
+#ifdef COMPERATORS
 	phaseCComp_interrupt();
+#endif
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_9);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
@@ -275,11 +285,25 @@ void TIM1_UP_TIM16_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-	systime_interrupt();
+	timerIRQ_systime();
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
   /* USER CODE END TIM2_IRQn 1 */
+}
+
+/**
+* @brief This function handles USART3 global interrupt / USART3 wake-up interrupt through EXTI line 28.
+*/
+void USART3_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART3_IRQn 0 */
+
+  /* USER CODE END USART3_IRQn 0 */
+  HAL_UART_IRQHandler(&huart3);
+  /* USER CODE BEGIN USART3_IRQn 1 */
+
+  /* USER CODE END USART3_IRQn 1 */
 }
 
 /**
@@ -288,7 +312,9 @@ void TIM2_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+#ifdef COMPERATORS
 	phaseBComp_interrupt();
+#endif
   /* USER CODE END EXTI15_10_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */

@@ -42,7 +42,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "platformAPI.h"
-#include "bldc_driver_adapter.h"
+#include "platformAdapter.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -107,20 +107,20 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  initBLDCDriver(
-      		  &hadc1, // hall B ADC
-      		  &hadc4, // hall A ADC
-      		  &hadc3, // user in ADC
-  			  &hadc2, // main Voltage & encoder calibration ADC
+	pHallB_ADC_handle = &hadc1;
+	pHallA_ADC_handle = &hadc4;
+	pUser_ADC_handle = &hadc3;
+	pMainVoltage_EncoderPoti_ADC_handle = &hadc2;
 
-      		  &htim1, // phase A PWM
-  			  &htim8, // phases B and C PWM
+	pPWM_handle_A = &htim1;
+	pPWM_handle_B_and_C = &htim8;
 
-  			  &htim2, // systime
-  			  &htim4, // encoder
+	pSystemtime_Timer_handle = &htim2;
+	pEncoder_Counter_handle = &htim4;
 
-      		  &hspi1, // bridgedriver SPI
-      		  &huart3); // UART
+	pSPI_handle = &hspi1;
+
+	pUART_handle = &huart3;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -145,19 +145,18 @@ int main(void)
   MX_TIM4_Init();
 
   /* USER CODE BEGIN 2 */
-  startupBLDCDriver();
+	startupPlatform();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-	  proceedBLDCDriver();
+	while (1) {
+		proceedPlatform();
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
 
-  }
+	}
   /* USER CODE END 3 */
 
 }
@@ -660,8 +659,8 @@ static void MX_USART3_UART_Init(void)
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_RTS_CTS;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart3.Init.OverSampling = UART_OVERSAMPLING_16;
   huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
   huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
@@ -801,6 +800,23 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* pADCHandler) {
+	if (pADCHandler == pHallA_ADC_handle) {
+		dmaIRQ_newValuesHallA();
+	} else if (pADCHandler == pHallB_ADC_handle) {
+		dmaIRQ_newValuesHallB();
+	}
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	uartIRQ_dataSendet();
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	uartIRQ_dataReceived();
+}
+
 
 /* USER CODE END 4 */
 
@@ -812,10 +828,8 @@ static void MX_GPIO_Init(void)
 void _Error_Handler(char * file, int line)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  while(1) 
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	platformError("HAL error.", file, "");
   /* USER CODE END Error_Handler_Debug */ 
 }
 
@@ -831,8 +845,8 @@ void _Error_Handler(char * file, int line)
 void assert_failed(uint8_t* file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-    ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	/* User can add his own implementation to report the file name and line number,
+	 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 
 }

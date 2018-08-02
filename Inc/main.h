@@ -87,10 +87,6 @@
 #define UART_RX_GPIO_Port GPIOB
 #define ADC_HALL_A_Pin GPIO_PIN_12
 #define ADC_HALL_A_GPIO_Port GPIOB
-#define UART_CTS_Pin GPIO_PIN_13
-#define UART_CTS_GPIO_Port GPIOB
-#define UART_RTS_Pin GPIO_PIN_14
-#define UART_RTS_GPIO_Port GPIOB
 #define PWM_C_LS_Pin GPIO_PIN_6
 #define PWM_C_LS_GPIO_Port GPIOC
 #define PWM_C_HS_Pin GPIO_PIN_7
