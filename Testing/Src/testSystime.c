@@ -7,6 +7,8 @@
 
 // =============== Includes ============================================================================================================
 #include "platformAPI.h"
+#include "testFramework.h"
+#include "tests.h"
 
 // =============== Defines =============================================================================================================
 #define LONG_TIME_us 		1000000
@@ -35,45 +37,29 @@ static uint8_t callback4Flag = 0;
 // =============== Function declarations ===============================================================================================
 
 // =============== Functions ===========================================================================================================
-// --------------- platformAPI.h -------------------------------------------------------------------------------------------------------
-void assert(uint8_t isTrue, char file[], uint32_t line){
-	if(!isTrue){
-		uint8_t buffer[200] = { 0 };
-		sprintf(buffer, "\n\rTest failed! File: %s Line: %u\n\r", file, line);
-		sendUartData(buffer, 200);
-		// stop
-		while(1){
-			setLED(boolean_true);
-			wait_ms(200);
-			setLED(boolean_false);
-			wait_ms(200);
-		}
-	}
-}
 
-void callback1(){
+static void callback1(){
 	callback1Flag = 1;
-	assert((timestamp_startDelayedCallbackTest + LONG_TIME_us) < getSystimeUs(), __FILE__, __LINE__);
+	ASSERT(timestamp_startDelayedCallbackTest + LONG_TIME_us);
 }
-void callback2(){
+static void callback2(){
 	callback2Flag = 1;
-	assert((timestamp_startDelayedCallbackTest + MEDIUM_TIME_us) < getSystimeUs(), __FILE__, __LINE__);
+	ASSERT((timestamp_startDelayedCallbackTest + MEDIUM_TIME_us) < getSystimeUs());
 }
-void callback3(){
+static void callback3(){
 	callback3Flag = 1;
-	assert((timestamp_startDelayedCallbackTest + SHORT_TIME_us) < getSystimeUs(), __FILE__, __LINE__);
+	ASSERT((timestamp_startDelayedCallbackTest + SHORT_TIME_us) < getSystimeUs());
 }
-void callback4(){
+static void callback4(){
 	callback4Flag = 1;
-	assert((timestamp_startDelayedCallbackTest + ULTRA_SHORT_TIME_us) < getSystimeUs(), __FILE__, __LINE__);
+	ASSERT((timestamp_startDelayedCallbackTest + ULTRA_SHORT_TIME_us) < getSystimeUs());
 }
-void callback5(){
+static void callback5(){
 	// not to call
-	assert(0, __FILE__, __LINE__);
+	ASSERT(0);
 }
 
-
-void startTestDelayedCallback(){
+static void startTestDelayedCallback(){
 	timestamp_startDelayedCallbackTest = getSystimeUs();
 
 	startDelayedCallback(LONG_TIME_us, &callback1);
@@ -82,69 +68,49 @@ void startTestDelayedCallback(){
 	startDelayedCallback(ULTRA_SHORT_TIME_us, &callback4);
 }
 
-void logString(char pMsg[]){
-	uint32_t cnt = 0;
-	uint8_t * pOrigMsg = pMsg;
-	while(*pMsg){
-		pMsg++;
-		cnt++;
-	}
-
-	sendUartData(pOrigMsg, cnt);
-}
-
-
-
-void startup(){
+// --------------- tests.h ----------------------------------------------------------------------------------------------------------
+void testSystime(){
 	logString("\n\r*** START BLDC MOTOR DRIVER PLATFORM TESTS ***\n\r");
 	logString("Testing of time functions... ");
 	// ******** test first use *********************************************************************************
 	startTestDelayedCallback();
 	wait_ms(LONG_TIME_ms*2);
 	// check & reset flags
-	assert(callback1Flag, __FILE__, __LINE__);
+	ASSERT(callback1Flag);
 	callback1Flag = 0;
-	assert(callback2Flag, __FILE__, __LINE__);
+	ASSERT(callback2Flag);
 	callback2Flag = 0;
-	assert(callback3Flag, __FILE__, __LINE__);
+	ASSERT(callback3Flag);
 	callback3Flag = 0;
-	assert(callback4Flag, __FILE__, __LINE__);
+	ASSERT(callback4Flag);
 	callback4Flag = 0;
 
 	// ******** test second use *********************************************************************************
 	startTestDelayedCallback();
 	wait_ms(LONG_TIME_ms*2);
 	// check & reset flags
-	assert(callback1Flag, __FILE__, __LINE__);
+	ASSERT(callback1Flag);
 	callback1Flag = 0;
-	assert(callback2Flag, __FILE__, __LINE__);
+	ASSERT(callback2Flag);
 	callback2Flag = 0;
-	assert(callback3Flag, __FILE__, __LINE__);
+	ASSERT(callback3Flag);
 	callback3Flag = 0;
-	assert(callback4Flag, __FILE__, __LINE__);
+	ASSERT(callback4Flag);
 	callback4Flag = 0;
 
 	// ******** test platform error (not enough delayed callbacks) **********************************************
-	assert(!platformErrorFlag, __FILE__, __LINE__);
+	ASSERT(!platformErrorFlag);
 	startDelayedCallback(LONG_TIME_us, &callback1);
 	startDelayedCallback(LONG_TIME_us, &callback2);
 	startDelayedCallback(LONG_TIME_us, &callback3);
 	startDelayedCallback(LONG_TIME_us, &callback4);
 	startDelayedCallback(LONG_TIME_us, &callback5);
 	// check flags
-	assert(platformErrorFlag, __FILE__, __LINE__);
+	ASSERT(platformErrorFlag);
 	logString("Passed! \n\r");
 
-	logString("Passed all tests.\n\r");
+	logString("*** All tests passed ***\n\r");
 }
-void proceed(){
-	setLED(boolean_true); // passed all tests
-}
-void platformError(char msg[], char file[], char line[]){
+void testSystime_platformError(char msg[], char file[], char line[]){
 	platformErrorFlag = 1;
-}
-
-
-void event_uartDataReceived(uint8_t data){
-
 }

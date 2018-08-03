@@ -10,6 +10,7 @@
 #include "platformAPI.h"
 #include "platformModules.h"
 #include "platformAPIConfig.h"
+#include "utils.h"
 
 // =============== Defines =============================================================================================================
 #define MAX_PWM_DUTYCYCLE 1800
@@ -291,4 +292,14 @@ void uartIRQ_dataSendet() {
 }
 void uartIRQ_dataReceived() {
 	HAL_UART_Receive_IT(pUART_handle, pBuffer, UART_NR_BYTES); // restart
+}
+
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	uartIRQ_dataSendet();
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	uartIRQ_dataReceived();
 }

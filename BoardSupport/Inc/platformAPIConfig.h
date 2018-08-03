@@ -9,7 +9,7 @@
 #define INC_PLATFORMAPICONFIG_H_
 
 //#define PWM
-//#define ADC
+#define ADC
 //#define COMPERATORS
 #define SYSTIME
 #define UART

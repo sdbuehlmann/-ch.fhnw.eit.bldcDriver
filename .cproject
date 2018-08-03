@@ -47,6 +47,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BLDCDriver/PlatformAPI}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BLDCDriver/BoardSupport/Inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BLDCDriver/BoardSupport/Src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BLDCDriver/Testing/Inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BLDCDriver/Testing/Src}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1636208221" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__weak=&quot;__attribute__((weak))&quot;"/>
@@ -88,6 +90,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="PlatformAPI"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Testing"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utils"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
 					</sourceEntries>
 				</configuration>
@@ -170,6 +173,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Testing"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Utils"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="startup"/>
 					</sourceEntries>
 				</configuration>

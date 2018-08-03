@@ -131,25 +131,7 @@
 /* #define USE_FULL_ASSERT    1U */
 
 /* USER CODE BEGIN Private defines */
-#define PWM_A_LS_channel TIM_CHANNEL_1 // TIM1
-#define PWM_A_HS_channel TIM_CHANNEL_2 // TIM1
-#define PWM_B_LS_channel TIM_CHANNEL_3	// TIM8
-#define PWM_B_HS_channel TIM_CHANNEL_4 // TIM8
-#define PWM_C_LS_channel TIM_CHANNEL_1 // TIM8
-#define PWM_C_HS_channel TIM_CHANNEL_2 // TIM8
 
-#define DELAYED_CALLBACK_A_channel TIM_CHANNEL_1 // TIM2
-#define DELAYED_CALLBACK_B_channel TIM_CHANNEL_2 // TIM2
-#define DELAYED_CALLBACK_C_channel TIM_CHANNEL_3 // TIM2
-#define DELAYED_CALLBACK_D_channel TIM_CHANNEL_4 // TIM2
-
-#define DELAYED_CALLBACK_A_ir_flag TIM_FLAG_CC1 // TIM2
-#define DELAYED_CALLBACK_B_ir_flag TIM_FLAG_CC2 // TIM2
-#define DELAYED_CALLBACK_C_ir_flag TIM_FLAG_CC3 // TIM2
-#define DELAYED_CALLBACK_D_ir_flag TIM_FLAG_CC4 // TIM2
-
-#define DECODER_COUNT_channel TIM_CHANNEL_1 // TIM15
-#define DECODER_COUNT_ir_flag TIM_FLAG_CC1 // TIM15
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
