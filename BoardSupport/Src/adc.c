@@ -10,6 +10,7 @@
 #include "platformAPI.h"
 #include "platformModules.h"
 #include "platformAPIConfig.h"
+#include "utils.h"
 
 #ifdef ADC
 // =============== Defines ============================================================================================================
@@ -24,8 +25,10 @@
 #define HALLSENSOR_VOLTAGE_OFFSET_LOWER_TOL_LIMIT		(HALLSENSOR_VOLTAGE_OFFSET_mV - HALLSENSOR_VOLTAGE_OFFSET_TOL_mV)
 
 // main voltage
-#define MAIN_VOLTAGE_DIVIDER_NUMERATOR					34
-#define MAIN_VOLTAGE_DIVIDER_DENOMINATOR				269
+//#define MAIN_VOLTAGE_DIVIDER_NUMERATOR					34
+//#define MAIN_VOLTAGE_DIVIDER_DENOMINATOR				269
+#define MAIN_VOLTAGE_DIVIDER_NUMERATOR					1
+#define MAIN_VOLTAGE_DIVIDER_DENOMINATOR				12
 
 #define MAX_VOLTAGE_IN_mV 								3300
 #define MAX_VALUE_ADC 									0b111111111111 // 12 bit ADC
@@ -54,10 +57,10 @@ static uint32_t lastControlValue = 0;
 static uint32_t pDMABufferA[NR_DMA_MEASUREMENTS];
 static uint32_t pDMABufferB[NR_DMA_MEASUREMENTS];
 
-static int32_t lastCurrentAValue = 0;
-static int32_t lastCurrentBValue = 0;
-static uint32_t lastCurrentARange = 0;
-static uint32_t lastCurrentBRange = 0;
+static int32_t lastCurrentAValue_mA = 0;
+static int32_t lastCurrentBValue_mA = 0;
+static uint32_t lastCurrentARange_mA = 0;
+static uint32_t lastCurrentBRange_mA = 0;
 
 static uint32_t hallSensorAOffset_mV = 0;
 static uint32_t hallSensorBOffset_mV = 0;
@@ -77,9 +80,9 @@ static uint32_t convert_mainVoltage(uint16_t adcValue);
  * @param ADC Value [0 - 0b1111 11111111]
  * @return encoder position angle [0 - 365]Deg
  */
-static uint32_t convert_encoderCalibration(uint16_t adcValue);
-static uint32_t convert_controlValue(uint16_t adcValue);
-static void convert_current(uint32_t dmaValues[], static uint32_t offsetCalibration, int32_t *pCurrent, uint32_t *pCurrentRange);
+static uint16_t convert_encoderCalibration(uint16_t adcValue);
+static uint8_t convert_controlValue(uint16_t adcValue);
+static void convert_current(uint32_t dmaValues[], const uint32_t offset_mV, int32_t *pCurrent, uint32_t *pCurrentRange);
 
 static uint32_t calculateOffset(uint32_t dmaValues[]);
 
@@ -99,7 +102,6 @@ static uint16_t convertADCValueToVoltage(uint16_t adcValue);
 static int32_t convertHallSensorVoltageToCurrent(uint16_t voltage_mV, uint16_t offset_mV);
 
 // =============== Functions ===========================================================================================================
-
 static uint32_t convert_mainVoltage(uint16_t adcValue) {
 	uint32_t adcVoltage_mV = convertADCValueToVoltage(adcValue);
 	uint32_t mainVoltage_mV = (adcVoltage_mV * MAIN_VOLTAGE_DIVIDER_DENOMINATOR) / MAIN_VOLTAGE_DIVIDER_NUMERATOR; // 3300 * 269 = 887'700 --> no overflow
@@ -114,16 +116,16 @@ static uint8_t convert_controlValue(uint16_t adcValue) {
 	uint16_t controlValue = (adcValue * 255) / MAX_VALUE_ADC;
 	return controlValue;
 }
-static void convert_current(uint32_t dmaValues[], static uint32_t offset_mV, int32_t *pCurrent, uint32_t *pCurrentRange) {
+static void convert_current(uint32_t dmaValues[], const uint32_t offset_mV, int32_t *pCurrent_mA, uint32_t *pCurrentRange_mA) {
 	uint32_t median = 0;
 	uint32_t range = 0;
 	calculateMedianAndRange(dmaValues, NR_DMA_MEASUREMENTS, &median, &range);
 
 	uint16_t medianVoltage_mV = convertADCValueToVoltage(median);
-	*pCurrent = convertHallSensorVoltageToCurrent(medianVoltage_mV, offset_mV);
+	*pCurrent_mA = convertHallSensorVoltageToCurrent(medianVoltage_mV, offset_mV);
 
 	uint16_t rangeVoltage_mV = convertADCValueToVoltage(range);
-	*pCurrentRange = convertHallSensorVoltageToCurrent(rangeVoltage_mV, offset_mV);
+	*pCurrentRange_mA = convertHallSensorVoltageToCurrent(rangeVoltage_mV, 0);
 }
 
 static uint32_t calculateOffset(uint32_t dmaValues[]) {
@@ -175,7 +177,13 @@ ADCStatus startMeasCurrentPhaseA() {
 	}
 	measureHallA = true;
 
-	HAL_ADC_Start_DMA(pHallA_ADC_handle, pDMABufferA, NR_DMA_MEASUREMENTS);
+	HAL_StatusTypeDef status = HAL_ADC_Start_DMA(pHallA_ADC_handle, pDMABufferA, NR_DMA_MEASUREMENTS);
+	if(status != HAL_OK){
+		 HAL_ADC_GetError(pHallA_ADC_handle);
+
+		PLATFORM_ERROR;
+		return adcStatus_error;
+	}
 
 	/* tutorials:
 	 * https://www.youtube.com/watch?v=ts5SEoTg2oY
@@ -189,7 +197,10 @@ ADCStatus startMeasCurrentPhaseB() {
 	}
 	measureHallB = true;
 
-	HAL_ADC_Start_DMA(pHallB_ADC_handle, pDMABufferB, NR_DMA_MEASUREMENTS);
+	if(HAL_ADC_Start_DMA(pHallB_ADC_handle, pDMABufferB, NR_DMA_MEASUREMENTS) != HAL_OK){
+		PLATFORM_ERROR;
+		return adcStatus_error;
+	}
 
 	return adcStatus_started;
 }
@@ -199,14 +210,15 @@ ADCStatus startMeasControlSignal() {
 	}
 	measureControlSignal = 1;
 
-	HAL_ADC_Start_IT(pUser_ADC_handle);
+	if(HAL_ADC_Start_IT(pUser_ADC_handle) != HAL_OK){
+		PLATFORM_ERROR;
+		return adcStatus_error;
+
+	}
 
 	return adcStatus_started;
 }
 ADCStatus startMeasMainVoltage() {
-	// set flag to inform about results
-	measureMainVoltage = true;
-
 	if (measureMainVoltage || measureEncoderCalibration) {
 		// already running
 		return adcStatus_running;
@@ -216,14 +228,14 @@ ADCStatus startMeasMainVoltage() {
 	measureMainVoltage = true;
 	mainVoltageAndEncoderCal_callbackCnt = 0; // reset count
 
-	HAL_ADC_Start_IT(pMainVoltage_EncoderPoti_ADC_handle);
+	if(HAL_ADC_Start_IT(pMainVoltage_EncoderPoti_ADC_handle) != HAL_OK){
+		PLATFORM_ERROR;
+		return adcStatus_error;
+	}
 
 	return adcStatus_started;
 }
 ADCStatus startMeasEncoderCalibration() {
-	// set flag to inform about results
-	measureEncoderCalibration = true;
-
 	if (measureMainVoltage || measureEncoderCalibration) {
 		// already running
 		return adcStatus_running;
@@ -233,7 +245,10 @@ ADCStatus startMeasEncoderCalibration() {
 	measureEncoderCalibration = true;
 	mainVoltageAndEncoderCal_callbackCnt = 0; // reset count
 
-	HAL_ADC_Start_IT(pMainVoltage_EncoderPoti_ADC_handle);
+	if(HAL_ADC_Start_IT(pMainVoltage_EncoderPoti_ADC_handle) != HAL_OK){
+		PLATFORM_ERROR;
+		return adcStatus_error;
+	}
 
 	return adcStatus_started;
 }
@@ -241,24 +256,31 @@ ADCStatus startMeasEncoderCalibration() {
 // --------------- platformAdapter.h-------- -------------------------------------------------------------------------------------------
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* pADCHandler) {
 	if (pADCHandler == pHallA_ADC_handle) {
+		HAL_ADC_Stop_DMA(pHallA_ADC_handle);
+		measureHallA = false;
 		if (!isInitialized) {
 			hallSensorAOffset_mV = calculateOffset(pDMABufferA);
 		} else {
-			convert_current(pDMABufferA, hallSensorAOffset_mV, &lastCurrentAValue, &lastCurrentARange);
+			convert_current(pDMABufferA, hallSensorAOffset_mV, &lastCurrentAValue_mA, &lastCurrentARange_mA);
+			newData_currentPhaseA(lastCurrentAValue_mA, lastCurrentARange_mA);
 		}
 
 	} else if (pADCHandler == pHallB_ADC_handle) {
+		HAL_ADC_Stop_DMA(pHallB_ADC_handle);
+		measureHallB = false;
 		if (!isInitialized) {
 			hallSensorBOffset_mV = calculateOffset(pDMABufferB);
 			isInitialized = true;
 		} else {
-			convert_current(pDMABufferB, hallSensorBOffset_mV, &lastCurrentBValue, &lastCurrentBRange);
+			convert_current(pDMABufferB, hallSensorBOffset_mV, &lastCurrentBValue_mA, &lastCurrentBRange_mA);
+			newData_currentPhaseB(lastCurrentBValue_mA, lastCurrentBRange_mA);
 		}
 
 	} else if (pADCHandler == pUser_ADC_handle) {
 		uint16_t adcValue = HAL_ADC_GetValue(pADCHandler);
 		lastControlValue = convert_controlValue(adcValue);
 		if (measureControlSignal) {
+			measureControlSignal = false;
 			newData_controlSignal(lastMainVoltageValue);
 		}
 
@@ -269,13 +291,15 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* pADCHandler) {
 			// rank 1 --> main voltage
 			lastMainVoltageValue = convert_mainVoltage(adcValue);
 			if (measureMainVoltage) {
+				measureMainVoltage = false;
 				newData_mainVoltage(lastMainVoltageValue);
 			}
 			break;
 		case 1:
 			// rank 2 --> encoder calibration
-			lastMainVoltageValue = convert_encoderCalibration(adcValue);
+			lastEncoderCalibrationValue = convert_encoderCalibration(adcValue);
 			if (measureEncoderCalibration) {
+				measureEncoderCalibration = false;
 				newData_calibrateEncoder(lastEncoderCalibrationValue);
 			}
 			break;

@@ -229,6 +229,10 @@ void startupPlatform() {
 #ifdef SYSTIME
 	initSystime();
 #endif /* SYSTIME */
+#ifdef ADC
+	initADC();
+#endif /* ADC */
+
 	// start PWM timers
 	HAL_TIM_Base_Start(pPWM_handle_A);
 	HAL_TIM_Base_Start(pPWM_handle_B_and_C);

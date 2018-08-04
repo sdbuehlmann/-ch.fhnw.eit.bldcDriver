@@ -143,8 +143,7 @@ DelayedCallbackFeedback startDelayedCallback(uint32_t timeUntilCallback_us,
 	DelayedCallbackHandle *pHandle = getNextWhoIsReady();
 	if (pHandle == 0) {
 		// no delayed callback in 'ready state'
-		platformError("No timer channel ready for delayed callback.", __FILE__,
-		__LINE__);
+		PLATFORM_ERROR;
 
 		return delayedCallbackFeedback_error;
 	}

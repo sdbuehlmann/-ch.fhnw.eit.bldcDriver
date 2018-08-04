@@ -70,8 +70,7 @@ static void startTestDelayedCallback(){
 
 // --------------- tests.h ----------------------------------------------------------------------------------------------------------
 void testSystime(){
-	logString("\n\r*** START BLDC MOTOR DRIVER PLATFORM TESTS ***\n\r");
-	logString("Testing of time functions... ");
+	logString("Testing of time functions...\n\r");
 	// ******** test first use *********************************************************************************
 	startTestDelayedCallback();
 	wait_ms(LONG_TIME_ms*2);
@@ -107,10 +106,8 @@ void testSystime(){
 	startDelayedCallback(LONG_TIME_us, &callback5);
 	// check flags
 	ASSERT(platformErrorFlag);
-	logString("Passed! \n\r");
-
-	logString("*** All tests passed ***\n\r");
+	logString("Passed!\n\n\r");
 }
-void testSystime_platformError(char msg[], char file[], char line[]){
+void testSystime_platformError(char file[], uint32_t line){
 	platformErrorFlag = 1;
 }
