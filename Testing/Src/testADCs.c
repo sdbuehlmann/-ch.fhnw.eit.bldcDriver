@@ -24,7 +24,7 @@
 // =============== Functions ===========================================================================================================
 
 // --------------- tests.h ----------------------------------------------------------------------------------------------------------
-void testADCs() {
+TestFeedback testADCs() {
 	logString("Testing of ADC functions...\n\r");
 
 	// ******** test current phase A *********************************************************************************
@@ -70,6 +70,8 @@ void testADCs() {
 	checkMustBeCalled();
 
 	logString("Passed!\n\n\r");
+
+	return testFeedback_finished;
 }
 
 void testADCs_newData_currentPhaseA(int32_t current, uint32_t range) {
@@ -96,6 +98,5 @@ void testADCs_newData_calibrateEncoder(uint32_t calibrateEncoder) {
 }
 
 void testADCs_platformError(char file[], uint32_t line) {
-	logString("Platform error: ");
-	assert(0, file, line);
+	logPlatformError(file, line);
 }

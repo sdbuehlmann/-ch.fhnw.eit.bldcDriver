@@ -14,15 +14,11 @@
 
 // =============== Defines =============================================================================================================
 #define MAX_PWM_DUTYCYCLE 1800
-#define UART_NR_BYTES 100
+
 
 // =============== Typdefs =============================================================================================================
 
 // =============== Variables ===========================================================================================================
-volatile uint8_t flag_hallA_ADC_isRunning = 0;
-volatile uint8_t flag_hallB_ADC_isRunning = 0;
-
-uint8_t pBuffer[UART_NR_BYTES] = { 0 };
 
 // =============== Function pointers ===================================================================================================
 
@@ -192,12 +188,6 @@ void setDCCalBridgeDriver(Boolean dcCal) {
 	HAL_GPIO_WritePin(DO_DRIVER_DC_CAL_GPIO_Port, DO_DRIVER_DC_CAL_Pin, dcCal);
 }
 
-// uart
-void sendUartData(uint8_t *pData, uint8_t size) {
-	//HAL_UART_Transmit_IT(pUART_handle, pData, size);
-	HAL_UART_Transmit(pUART_handle, pData, size, 10);
-}
-
 // encoder
 #ifdef ENCODER
 void enableEncoder(Boolean enable) {
@@ -232,24 +222,16 @@ void startupPlatform() {
 #ifdef ADC
 	initADC();
 #endif /* ADC */
+	initUART();
 
 	// start PWM timers
 	HAL_TIM_Base_Start(pPWM_handle_A);
 	HAL_TIM_Base_Start(pPWM_handle_B_and_C);
 
-	HAL_UART_Receive_IT(pUART_handle, pBuffer, UART_NR_BYTES);
-
 	startup();
 }
 void proceedPlatform() {
-	// handle UART
-	for(uint8_t cnt = 0; cnt < UART_NR_BYTES; cnt++){
-		if(pBuffer[cnt] != 0){
-			//event_uartDataReceived(pBuffer[cnt]);
-			sendUartData(pBuffer + cnt, 1);
-			pBuffer[cnt] = 0;
-		}
-	}
+	proceedUART();
 
 	proceed();
 }
@@ -295,15 +277,8 @@ void uartIRQ_dataSendet() {
 
 }
 void uartIRQ_dataReceived() {
-	HAL_UART_Receive_IT(pUART_handle, pBuffer, UART_NR_BYTES); // restart
+
 }
 
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-	uartIRQ_dataSendet();
-}
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-	uartIRQ_dataReceived();
-}

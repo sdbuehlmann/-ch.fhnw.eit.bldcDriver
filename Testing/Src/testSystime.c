@@ -69,7 +69,7 @@ static void startTestDelayedCallback(){
 }
 
 // --------------- tests.h ----------------------------------------------------------------------------------------------------------
-void testSystime(){
+TestFeedback testSystime(){
 	logString("Testing of time functions...\n\r");
 	// ******** test first use *********************************************************************************
 	startTestDelayedCallback();
@@ -107,6 +107,8 @@ void testSystime(){
 	// check flags
 	ASSERT(platformErrorFlag);
 	logString("Passed!\n\n\r");
+
+	return testFeedback_finished;
 }
 void testSystime_platformError(char file[], uint32_t line){
 	platformErrorFlag = 1;

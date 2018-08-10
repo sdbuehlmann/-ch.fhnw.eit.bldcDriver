@@ -16,13 +16,9 @@
 #define STOP_LED_BLINK_TIME_ms 100
 
 // =============== Typdefs =============================================================================================================
-typedef enum {
-	test_beginning, test_uart, test_systime, test_adc, test_pwm, test_extIRQ, test_sync, test_end
-} Test;
+
 
 // =============== Variables ===========================================================================================================
-static Test testState = test_beginning;
-
 static ToBeCalled_Function toBeCalledFunctions[100];
 static uint8_t toBeCalledFunctions_cnt = 0;
 
@@ -63,6 +59,14 @@ void logSigned(char *pName, uint8_t nameLenght, int32_t var, char *pUnit, uint8_
 	logString(str);
 }
 
+void logPlatformError(char file[], uint32_t line) {
+	uint8_t buffer[200] = { 0 };
+	sprintf(buffer, "\n\rTest failed because of a platform error! File: %s Line: %lu\n\r", file, line);
+	sendUartData(buffer, 200);
+
+	stopTesting();
+}
+
 void stopTesting() {
 	while (1) {
 		setLED(true);
@@ -101,85 +105,11 @@ void checkMustBeCalled() {
 	for (uint8_t cnt = 0; cnt < toBeCalledFunctions_cnt; cnt++) {
 		if (toBeCalledFunctions[cnt].nrToBeCalled != 0) {
 			uint8_t buffer[200] = { 0 };
-			sprintf(buffer, "\n\rTest failed because of not called functions! File: %s Line: %lu\n\r", toBeCalledFunctions[cnt].pFilename, toBeCalledFunctions[cnt].line);
+			sprintf(buffer, "\n\rTest failed because of not called functions! File: %s Line: %lu\n\r", toBeCalledFunctions[cnt].pFilename,
+					toBeCalledFunctions[cnt].line);
 			sendUartData(buffer, 200);
 
 			stopTesting();
 		}
-	}
-}
-
-// --------------- platformAPI.h -------------------------------------------------------------------------------------------------------
-void startup() {
-	logString("\n\n\n\r*** START BLDC MOTOR DRIVER PLATFORM TESTS ***\n\r");
-
-	testState = test_systime;
-	testSystime();
-
-	testState = test_adc;
-	testADCs();
-
-	logString("*** All tests passed ***\n\r");
-}
-void proceed() {
-	setLED(true);
-}
-void platformError(char file[], uint32_t line) {
-	switch (testState) {
-	case test_systime:
-		testSystime_platformError(file, line);
-		break;
-	case test_adc:
-		testADCs_platformError(file, line);
-		break;
-	default:
-		break;
-	}
-}
-
-void newData_currentPhaseA(int32_t current, uint32_t range) {
-	switch (testState) {
-	case test_adc:
-		testADCs_newData_currentPhaseA(current, range);
-		break;
-	default:
-		break;
-	}
-}
-void newData_currentPhaseB(int32_t current, uint32_t range) {
-	switch (testState) {
-	case test_adc:
-		testADCs_newData_currentPhaseB(current, range);
-		break;
-	default:
-		break;
-	}
-}
-
-void newData_controlSignal(uint32_t controlSignal) {
-	switch (testState) {
-	case test_adc:
-		testADCs_newData_controlSignal(controlSignal);
-		break;
-	default:
-		break;
-	}
-}
-void newData_mainVoltage(uint32_t mainVoltage) {
-	switch (testState) {
-	case test_adc:
-		testADCs_newData_mainVoltage(mainVoltage);
-		break;
-	default:
-		break;
-	}
-}
-void newData_calibrateEncoder(uint32_t calibrateEncoder) {
-	switch (testState) {
-	case test_adc:
-		testADCs_newData_calibrateEncoder(calibrateEncoder);
-		break;
-	default:
-		break;
 	}
 }

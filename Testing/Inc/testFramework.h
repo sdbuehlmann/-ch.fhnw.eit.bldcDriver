@@ -33,5 +33,6 @@ void stopTesting();
 void logString(char pMsg[]);
 void logUnsigned(char *pName, uint8_t nameLenght, uint32_t var, char *pUnit, uint8_t unitLenght);
 void logSigned(char *pName, uint8_t nameLenght, int32_t var, char *pUnit, uint8_t unitLenght);
+void logPlatformError(char file[], uint32_t line);
 
 #endif /* INC_TESTFRAMEWORK_H_ */
